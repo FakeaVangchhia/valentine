@@ -435,53 +435,51 @@
     createFloatingHearts();
     createSparkles();
     
-    // Make "No" button move and shrink
+    // Make "No" button continuously move and shrink
     document.getElementById('btn1').addEventListener('click', function(e) {
         e.preventDefault();
         
-        if (btn1ClickCount >= 6) {
-            return;
-        }
-        
         btn1ClickCount++;
         
-        // Update button text
-        if (btn1ClickCount <= btn1Texts.length) {
-            this.textContent = btn1Texts[btn1ClickCount - 1];
-        }
+        // Update button text cyclically through the array
+        const textIndex = (btn1ClickCount - 1) % btn1Texts.length;
+        this.textContent = btn1Texts[textIndex];
         
         // Make button absolute positioned after first click
         if (btn1ClickCount === 1) {
             this.style.position = 'absolute';
         }
         
-        // Calculate scale
-        const scale = 1 - (btn1ClickCount * 0.1667);
+        // Calculate scale - shrink for first 6 clicks, then maintain minimum size
+        const scale = btn1ClickCount <= 6 ? 1 - (btn1ClickCount * 0.1667) : 0;
         
         // Create particle effect at button location
         createParticles(e.clientX, e.clientY);
         
-        if (btn1ClickCount === 6) {
-            this.style.opacity = '0';
-            this.style.transform = 'scale(0) rotate(360deg)';
-            setTimeout(() => {
-                this.style.display = 'none';
-            }, 500);
-        } else {
-            const maxX = window.innerWidth - 200;
-            const maxY = window.innerHeight - 200;
-            
-            const randomX = Math.random() * (maxX - 100) + 100;
-            const randomY = Math.random() * (maxY - 100) + 100;
-            
-            this.style.left = randomX + 'px';
-            this.style.top = randomY + 'px';
-            this.style.transform = `scale(${scale})`;
-        }
+        // Always move to random position (never disappear)
+        // Account for button size (approximately 200px wide x 70px tall) and scaling
+        const buttonWidth = 200;
+        const buttonHeight = 70;
+        const currentScale = Math.max(scale, 0.01);
+        const scaledWidth = buttonWidth * currentScale;
+        const scaledHeight = buttonHeight * currentScale;
+        const padding = 20; // Extra padding from edges
         
-        // Grow the "Yes" button
+        const minX = padding;
+        const maxX = window.innerWidth - scaledWidth - padding;
+        const minY = padding;
+        const maxY = window.innerHeight - scaledHeight - padding;
+        
+        const randomX = Math.random() * (maxX - minX) + minX;
+        const randomY = Math.random() * (maxY - minY) + minY;
+        
+        this.style.left = randomX + 'px';
+        this.style.top = randomY + 'px';
+        this.style.transform = `scale(${currentScale})`;
+        
+        // Grow the "Yes" button (cap at 2.5x size)
         const btn2 = document.getElementById('btn2');
-        const newScale = 1 + (btn1ClickCount * 0.15);
+        const newScale = Math.min(1 + (btn1ClickCount * 0.15), 2.5);
         btn2.style.transform = `scale(${newScale})`;
     });
     
